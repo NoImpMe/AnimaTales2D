@@ -1,0 +1,60 @@
+using BansheeGz.BGDatabase;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AnimaEntry
+{
+    public string name;           
+    public string type;           
+    public string description;     
+    public string imageName;       
+    public float hp;               
+    public float ap;               
+    public float sp;               
+    public float dp;
+    public int meeted;
+    public List<string> skillName;
+    public string objectFile;      
+    public EmotionType emotion;
+
+    public Sprite GetImage()
+    {
+        return Resources.Load<Sprite>($"Anima_Sprites/{objectFile}");
+    }
+
+    public static List<AnimaEntry> LoadAll()
+    {
+        var list = new List<AnimaEntry>();
+        var animaTable = BGRepo.I.GetMeta("Anima");
+
+        animaTable.ForEachEntity(entity =>
+        {
+            if (entity.Get<int>("IsBoss") == 1)
+                return;
+
+            var typeValue = entity.Get<string>("Type");
+            var entry = new AnimaEntry
+            {
+                name = entity.Get<string>("name"),
+                type = typeValue,
+                description = entity.Get<string>("Description"),
+                hp = entity.Get<float>("HP"),
+                ap = entity.Get<float>("AP"),
+                sp = entity.Get<float>("SP"),
+                dp = entity.Get<float>("DP"),
+                objectFile = entity.Get<string>("Objectfile"),
+                meeted = entity.Get<int>("Meeted"),
+                emotion = ParseEmotion(typeValue),
+                skillName = entity.Get<List<string>>("Skill"),
+            };
+            list.Add(entry);
+        });
+
+        return list;
+    }
+
+    private static EmotionType ParseEmotion(string type)
+    {
+        return System.Enum.TryParse(type, out EmotionType result) ? result : EmotionType.Inanis;
+    }
+}
